@@ -1,61 +1,56 @@
-﻿using WebApplication3.Models;
+﻿using WebApplication3.Database;
+using WebApplication3.Models;
 
 namespace WebApplication3.Services
 {
     public class DrinkService
     {
-        private List<DrinkModel> _drinks = new List<DrinkModel>
+        private Random _random = new Random();
+        private readonly DatabaseContext _context;
+
+        public DrinkService(DatabaseContext context)
         {
-            new DrinkModel {Id = 1, Name = "Coca Cola", IsAlcoholic = false, Description = "A popular soft drink."},
-            new DrinkModel {Id = 2, Name = "Pepsi", IsAlcoholic = false, Description = "A well-known cola beverage."},
-            new DrinkModel {Id = 3, Name = "Orange Juice", IsAlcoholic = false, Description = "Freshly squeezed orange juice."},
-            new DrinkModel {Id = 4, Name = "Lemonade", IsAlcoholic = false, Description = "A refreshing drink made from lemons, sugar, and water"},
-            new DrinkModel {Id = 5, Name = "Iced Tea", IsAlcoholic = false, Description = "A chilled tea beverage."},
-            new DrinkModel {Id = 6, Name = "Beer", IsAlcoholic = true, Description = "An alcoholic beverage made from fermented grains."},
-            new DrinkModel {Id = 7, Name = "Wine", IsAlcoholic = true, Description = "An alcoholic beverage made from fermented grapes."},
-            new DrinkModel {Id = 8, Name = "Water", IsAlcoholic = false, Description = "Essential for life, hydrating and refreshing."}
-
-        };
-
-        public DrinkService()
-        {
-
+            _context = context;
         }
 
         public List<DrinkModel> GetAll()
         {
-            return _drinks;
+            return _context.Drinks.ToList();
         }
 
         public DrinkModel GetById(int id)
         {
-            var drink = _drinks.FirstOrDefault(d => d.Id == id);
+            var drink = _context.Drinks.FirstOrDefault(d => d.Id == id);
             if (drink == null) throw new Exception($"Drink with ID {id} not found.");
             return drink;
         }
 
         public void AddDrink(DrinkModel drink)
         {
-            _drinks.Add(drink);
+            _context.Drinks.Add(drink);
+            _context.SaveChanges();
         }
         public void DeleteDrink(int id)
         {
-            var drinkToRemove = _drinks.FirstOrDefault(d => d.Id == id);
+            var drinkToRemove = _context.Drinks.FirstOrDefault(d => d.Id == id);
             if (drinkToRemove != null)
-                _drinks.Remove(drinkToRemove);
+            {
+                _context.Drinks.Remove(drinkToRemove);
+                _context.SaveChanges();
+            }
         }
-        public DrinkModel FindByName(string name)
+        public DrinkModel? FindByName(string name)
         {
-            var drink = _drinks.FirstOrDefault(d => d.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+            var drink = _context.Drinks.FirstOrDefault(d => d.Name == name);
             if (drink == null)
             {
                 throw new KeyNotFoundException($"Drink with name {name} not found.");
             }
             return drink;
         }
-        public string Update(int id, string name, string description, bool isAlcoholic)
+        public string Update(int id, string name, string description, int isAlcoholic)
         {
-            var drink = _drinks.FirstOrDefault(d => d.Id == id);
+            var drink = _context.Drinks.Where(d => d.Id == id).FirstOrDefault();
             if (drink == null) return $"Drink with ID {id} not found.";
             if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(description)) return "Name and/or description cannot be null.";
 
@@ -63,14 +58,28 @@ namespace WebApplication3.Services
             drink.Description = description;
             drink.IsAlcoholic = isAlcoholic;
 
+            _context.SaveChanges();
+
             return $"Drink with ID {id} updated successfully.";
         }
-        public DrinkModel GetRandom()
+        public DrinkModel? GetRandom()
         {
-            if (_drinks.Count == 0) throw new InvalidOperationException("No drinks available to select from.");
-            Random random = new Random();
-            int index = random.Next(_drinks.Count);
-            return _drinks[index];
+            if (_context.Drinks.Count() == 0) throw new InvalidOperationException("No drinks available to select from.");
+            int index = _random.Next(1, _context.Drinks.Count());
+            return _context.Drinks.Skip(index).FirstOrDefault();
+        }
+        public List<DrinkModel> GetOdd()
+        {
+            return _context.Drinks.Where(d => d.Id % 2 != 0).ToList();
+
+        }
+        public List<DrinkModel> GetPages(int page, int pageSize)
+        {
+            if (page < 1 || pageSize < 1)
+                throw new ArgumentException("Page and pageSize must be greater than 0.");
+            return _context.Drinks.Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
         }
     }
 }

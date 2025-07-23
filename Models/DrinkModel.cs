@@ -1,10 +1,13 @@
-﻿namespace WebApplication3.Models
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace WebApplication3.Models
 {
+    [Table("drinks")]
     public class DrinkModel
     {
-        public int? Id { get; set; }
+        public int Id { get; set; }
         public required string Name { get; set; }
-        public bool IsAlcoholic { get; set; } = false;
+        public int IsAlcoholic { get; set; } = 0;
         public required string Description { get; set; } = string.Empty;
         public override string ToString()
         {

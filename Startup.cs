@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore;
+using WebApplication3.Database;
 using WebApplication3.Services;
 
 namespace WebApplication3
@@ -34,7 +36,9 @@ namespace WebApplication3
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
 
-            services.AddSingleton<DrinkService>();
+            services.AddScoped<DrinkService>();
+            services.AddDbContext<DatabaseContext>(options =>
+                options.UseSqlite("Data Source = drink.db"));
         }
     }
 }

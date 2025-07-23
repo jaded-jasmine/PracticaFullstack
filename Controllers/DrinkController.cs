@@ -33,7 +33,21 @@ namespace WebApplication3.Controllers
             if (result == null) return NotFound("No drinks available.");
             return Ok(result);
         }
-
+        [HttpGet("odd")]
+        public ActionResult<List<DrinkModel>> GetOddDrinks()
+        {
+            var result = _drinkService.GetOdd();
+            if (result == null || !result.Any()) return NotFound("No odd drinks available.");
+            return Ok(result);
+        }
+        [HttpGet("pages")]
+        public ActionResult<List<DrinkModel>> GetPaginatedDrinks(int pageNumber = 1, int pageSize = 10)
+        {
+            if (pageNumber < 1 || pageSize < 1) return BadRequest("Page number and size must be greater than zero.");
+            var result = _drinkService.GetPages(pageNumber, pageSize);
+            if (result == null || !result.Any()) return NotFound("No drinks available for the specified page.");
+            return Ok(result);
+        }
         [HttpPost]
         public ActionResult AddDrink([FromBody] DrinkModel drink)
         {
