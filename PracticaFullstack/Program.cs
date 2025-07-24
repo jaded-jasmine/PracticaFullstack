@@ -1,4 +1,7 @@
 
+using Microsoft.EntityFrameworkCore;
+using PracticaFullstack.Context;
+
 namespace PracticaFullstack
 {
     public class Program
@@ -13,6 +16,13 @@ namespace PracticaFullstack
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
+
+
+            builder.Services.AddScoped<CatService>();
+            builder.Services.AddDbContext<DatabaseContext>(options =>
+            options.UseSqlite("Data Source = Cats.db;"));
+
 
             var app = builder.Build();
 
