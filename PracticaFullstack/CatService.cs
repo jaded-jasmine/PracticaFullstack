@@ -1,69 +1,68 @@
-﻿using PracticaFullstack.Models;
+﻿using PracticaFullstack.Context;
+using PracticaFullstack.Models;
 using System.Reflection;
+using System.Reflection.Metadata.Ecma335;
+using System.Xml.Linq;
 
 public class CatService
 {
     private Random _random = new Random();
-    List<Cat> context = new List<Cat>
-    {
-        new Cat{ Id = 1, Name = "Mittens", Age = 3, Breed = "British Shorthair"},
-        new Cat{ Id = 2, Name = "Leo", Age = 6, },
-        new Cat{ Id = 3, Age = 1, },
-        new Cat{ Id = 4, Name = "Max", Age = 9, Breed = "Maine Coon"},
-        new Cat{ Id = 5, Name = "Charlie", Age = 4},
-        new Cat{ Id = 6, Age = 7},
-        new Cat{ Id = 7, Name = "Jasper", Age = 5},
-        new Cat{ Id = 8, Age = 2},
-    };
+    private readonly DatabaseContext _context;
 
-    public CatService(){}
+    public CatService(DatabaseContext context){
+        _context = context;
+    }
 
+
+    
     public List<Cat> GetAll()
     {
-        return context;
+        return _context.Cats.ToList();
     }
 
     public Cat? GetById(int id)
     {
-        return context.FirstOrDefault(cat => cat.Id == id);
+        return _context.Cats.FirstOrDefault(cat => cat.Id == id);
     }
 
+    
     public Cat AddCat(Cat newCat)
     {
-        if (newCat.Id == 0 || context.Any(c => c.Id == newCat.Id))
+        if (newCat.Id == 0 || _context.Cats.Any(c => c.Id == newCat.Id))
         {
-            newCat.Id = context.Any() ? context.Max(c => c.Id) + 1 : 1;
-            context.Add(newCat);
+            newCat.Id = _context.Cats.Any() ? _context.Cats.Max(c => c.Id) + 1 : 1;
+            _context.Add(newCat);
         }
         return newCat;
     }
 
     public bool DeleteCat(int id)
     {
-        var catToRemove = context.FirstOrDefault(cat => cat.Id == id);
+        var catToRemove = _context.Cats.FirstOrDefault(cat => cat.Id == id);
 
         if (catToRemove != null)
         {
-            context.Remove(catToRemove);
+            _context.Cats.Remove(catToRemove);
             return true;
         }
         return false;
     }
 
-    public List<Cat> FindCat(string partialName)
+    public Cat? FindCat(string name)
     {
-        if (string.IsNullOrWhiteSpace(partialName))
+        var cat = _context.Cats.Where(c =>c.Name == name).FirstOrDefault();
+
+        if(cat == null)
         {
-            return new List<Cat>();
+            throw new Exception ($"Pisica cu numele de {name} nu a fost gasita.");
         }
-        return context
-            .Where(cat => cat.Name.Contains(value: partialName, StringComparison.OrdinalIgnoreCase))
-            .ToList();
+        return cat;
+
     }
 
     public bool UpdateCat(Cat updatedCat)
     {
-        var existingCat = context.FirstOrDefault(c => c.Id == updatedCat.Id);
+        var existingCat = _context.Cats.FirstOrDefault(c => c.Id == updatedCat.Id);
 
         if (existingCat != null)
         {
@@ -78,12 +77,28 @@ public class CatService
 
     public Cat? GetRandomCat()
     {
-        if (!context.Any())
+        if (!_context.Cats.Any())
             return null;
 
-        int random = _random.Next(1, context.Count());
+        int random = _random.Next(1, _context.Cats.Count());
 
-        return context.ElementAt(random);
+        return _context.Cats.ElementAt(random);
+    }
+
+    public List<Cat> GetOddCat()
+    {
+        if(_context.Cats.Count() < 1)
+        {
+            throw new Exception("Lista este goala.");
+        }
+
+        return _context.Cats.Where(c => c.Id % 2 == 1).ToList();
+
+    }
+
+    public List<Cat> GetPages(int pageNumber, int objNumber)
+    {
+        return _context.Cats.Skip(objNumber * (pageNumber-1)).Take(objNumber).ToList();
     }
 
 }
