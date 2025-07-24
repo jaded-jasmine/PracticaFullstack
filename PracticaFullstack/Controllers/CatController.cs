@@ -10,7 +10,6 @@ namespace Practica_22072025.Controllers
         public CatController(CatService catService)
         {
             _catService = catService;
-            
         }
 
         [HttpGet("GetAll")]
@@ -18,14 +17,14 @@ namespace Practica_22072025.Controllers
         var result = _catService.GetAll();
             return Ok(result);
         }
-
+        
         [HttpGet("GetById")]
         public IActionResult GetById(int id)
         {
             var result = _catService.GetById(id);
             return Ok(result);
         }
-
+        
         [HttpPost("AddCat")]
         public IActionResult AddCat(Cat newCat)
         {
@@ -33,6 +32,7 @@ namespace Practica_22072025.Controllers
             return Ok(result);
         }
 
+        
         [HttpDelete("DeleteCat")]
         public IActionResult DeleteCat(int id)
         {
@@ -41,12 +41,13 @@ namespace Practica_22072025.Controllers
         }
 
         [HttpGet("FindCat")]
-        public IActionResult FindCat(string partialName)
+        public IActionResult FindCat(string name)
         {
-            var result = _catService.FindCat(partialName);
+            var result = _catService.FindCat(name);
             return Ok(result);
         }
 
+        
         [HttpPut("UpdateCat")]
         public IActionResult UpdateCat(Cat updatedCat)
         {
@@ -58,6 +59,13 @@ namespace Practica_22072025.Controllers
         public IActionResult GetRandomCat()
         {
             var result = _catService.GetRandomCat();
+            return Ok(result);
+        }
+
+        [HttpGet("GetOddCat")]
+        public IActionResult GetOddCat()
+        {
+            var result = _catService.GetOddCat();
             return Ok(result);
         }
 
